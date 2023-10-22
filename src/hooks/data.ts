@@ -64,7 +64,12 @@ export const useBoxes = () => {
     );
   };
 
-  const getNeighbors = (x: number, y: number, stateData: Data) => {
+  const adhereRules = (
+    x: number,
+    y: number,
+    stateData: Data,
+    isActive: boolean
+  ): boolean => {
     let count = 0;
     const indices = [
       [x - 1, y - 1],
@@ -81,28 +86,17 @@ export const useBoxes = () => {
       if (!stateData[x] || !stateData[x][y]) continue;
       if (stateData[x][y].active) count++;
     }
-    return count;
+
+    return isActive ? count === 2 || count === 3 : count === 3;
   };
 
   const playGame = () => {
     setData((prev) =>
       prev.map((row, y) =>
-        row.map((box, x) => {
-          const neighbors = getNeighbors(x, y, prev);
-          if (box.active) {
-            if (neighbors === 2 || neighbors === 3) {
-              return { ...box, active: true };
-            } else {
-              return { ...box, active: false };
-            }
-          } else {
-            if (neighbors === 3) {
-              return { ...box, active: true };
-            } else {
-              return { ...box, active: false };
-            }
-          }
-        })
+        row.map((box, x) => ({
+          ...box,
+          active: adhereRules(x, y, prev, box.active),
+        }))
       )
     );
   };
